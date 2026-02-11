@@ -1,0 +1,4 @@
+sqlalchemy>=1.4,<2.0
+asyncpg
+redis>=5.0.0
+faker

@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy>=2.0
+asyncpg
+psycopg2-binary
+redis>=5.0.0
+python-dotenv
+transformers
+torch
+httpx
+pytest
+pytest-asyncio
+pytest-cov
