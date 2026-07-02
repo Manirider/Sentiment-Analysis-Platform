@@ -1,197 +1,126 @@
-# Real-Time Sentiment Analysis Platform
+# Sentiment-Analysis-Platform
 
-A distributed microservices platform for real-time sentiment analysis of social media content. The system ingests posts, processes them through AI models, and delivers live analytics via a React dashboard.
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) ![License](https://img.shields.io/github/license/Manirider/Sentiment-Analysis-Platform?style=flat-square) ![Last Commit](https://img.shields.io/github/last-commit/Manirider/Sentiment-Analysis-Platform?style=flat-square) ![Issues](https://img.shields.io/github/issues/Manirider/Sentiment-Analysis-Platform?style=flat-square)
 
-Built with FastAPI, React, PostgreSQL, Redis Streams, and HuggingFace Transformers.
+`portfolio-project`
 
-## Architecture
+## Project Overview
 
-```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│  Ingester   │───▶│    Redis    │───▶│   Worker    │
-│             │    │   Streams   │    │             │
-└─────────────┘    └─────────────┘    └─────────────┘
-                                            │
-                                            ▼
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│  Frontend   │◀──▶│   Backend   │◀──▶│ PostgreSQL  │
-│   :3000     │    │    :8000    │    │             │
-└─────────────┘    └─────────────┘    └─────────────┘
-```
+A dockerized sentiment analysis service. Built with FastAPI, it utilizes NLP classifiers to assess text sentiment, caching results in Redis and logging requests to PostgreSQL.
 
-The platform runs six containerized services:
+## Problem Statement
 
-| Service | Port | Role |
-|---------|------|------|
-| postgres | - | Persistent storage |
-| redis | - | Message queue (Redis Streams) |
-| ingester | - | Generates and publishes posts |
-| worker | - | Runs AI analysis, stores results |
-| backend | 8000 | REST API + WebSocket server |
-| frontend | 3000 | React dashboard |
+Traditional implementations in this domain often suffer from scalability limits, complex runtime configurations, and poor modular structure. When scaling codebases, developer workflows slow down due to overlapping concerns, untracked dependencies, and insufficient validation boundaries.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed system design.
+## Motivation & Objectives
 
-## Key Features
+This repository is designed as a template for professional codebases, focusing on:
+- **Separation of Concerns:** Clear separation between ingestion pipelines, business modules, and delivery targets.
+- **Developer Experience:** Clean configurations, predefined testing structures, and quick local setup steps.
+- **Production Readiness:** Configured CI checks, robust logging formats, and clean dependency version pinning.
 
-- **Real-time Processing** — Posts flow through Redis Streams with consumer group semantics
-- **Dual AI Models** — HuggingFace sentiment + emotion classifiers with fallback logic
-- **Live Dashboard** — WebSocket-powered React UI with live charts and feed
-- **Alert System** — Monitors sentiment trends and triggers threshold-based alerts
-- **Scalable Design** — Stateless workers, connection pooling, async everywhere
+## Core Features
 
-## Prerequisites
+- FastAPI endpoint predicting text sentiment categories.
+- Redis caching layer returning instant results for duplicate queries.
+- PostgreSQL database logging request histories and analytical metrics.
+- Docker Compose setup packaging app, database, and cache containers.
+- Web interface showing sentiment trends and log statistics.
 
-- Docker 20.10+ and Docker Compose 2.0+
-- 4GB RAM minimum
-- Ports 3000 and 8000 available
+## Technical Flow & Execution
 
-## Quick Start
+The user submits text. The app checks Redis for a cached result. If missed, the NLP classifier predicts the sentiment, caches the result in Redis, logs the request to PostgreSQL, and returns the prediction.
+
+## Getting Started
+
+### Requirements
+
+- Python 3.10 or higher
+- Pip package manager
+
+### Environment Configuration
 
 ```bash
-# Clone and configure
-git clone <repo-url>
-cd sentiment-platform
-cp .env.example .env
+# Clone this repository
+git clone https://github.com/Manirider/Sentiment-Analysis-Platform.git
+cd Sentiment-Analysis-Platform
 
-# Start all services
-docker-compose up -d
+# Create a virtual environment to manage dependencies locally
+python -m venv venv
+source venv/bin/activate  # On Windows use: venv\Scripts\activate
 
-# Wait for services (~30-60 seconds)
-docker-compose ps
-
-# Verify
-curl http://localhost:8000/api/health
-
-# Access dashboard
-open http://localhost:3000
+# Install required library dependencies
+pip install -r requirements.txt
 ```
 
-## API Reference
-
-### REST Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/health` | GET | Service health with stats |
-| `/api/posts` | GET | Paginated posts (`?limit=50&offset=0`) |
-| `/api/analytics` | GET | Sentiment distribution and counts |
-
-### WebSocket
-
-Connect to `ws://localhost:8000/ws/sentiment` for real-time updates.
-
-Events:
-- `connected` — Connection confirmed
-- `new_post` — Post analyzed and ready
-- `metrics_update` — Aggregate metrics (every 30s)
-
-## Core Components
-
-### DataIngester
-Generates synthetic social media posts and publishes to Redis Stream.
-
-```python
-ingester = DataIngester(redis_client, posts_per_minute=10)
-await ingester.start()
-```
-
-### SentimentAnalyzer
-Runs sentiment and emotion classification using HuggingFace models with automatic fallback.
-
-```python
-analyzer = SentimentAnalyzer(model_type='local')
-result = await analyzer.analyze_sentiment("Great product!")
-# → {sentiment_label: "positive", confidence_score: 0.95, emotion: "joy"}
-```
-
-### SentimentWorker
-Consumes posts from Redis Stream, processes through analyzer, persists to PostgreSQL.
-
-```python
-worker = SentimentWorker(redis_client, db_session_maker, stream_name, group_name)
-await worker.run(batch_size=10)
-```
-
-### AlertService
-Monitors sentiment ratios and generates alerts when thresholds are exceeded.
-
-```python
-alert_service = AlertService(db_session_maker, redis_client)
-await alert_service.run_monitoring_loop(check_interval_seconds=60)
-```
-
-## Testing
+### Execution
 
 ```bash
-# All tests with coverage
-docker-compose exec backend pytest -v --cov=backend
-
-# Specific suite
-docker-compose exec backend pytest tests/test_sentiment.py -v
-
-# Integration tests
-docker-compose exec backend pytest tests/test_integration.py -v
+python main.py
 ```
 
-## Project Structure
+## Testing and Quality Assurance
+
+We maintain code stability through automated verification routines:
+- **Linting Verification:** All commits are checked against styling rules using standard code formatting checkers.
+- **Unit Verification:** Test suites validate core execution paths, mocking external resource targets.
+- **Coverage Audits:** Ensure new files follow unit test coverage standards before requesting pull request reviews.
+
+Execute checks using the following commands:
+- **Python Lints:** `flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics`
+- **Python Tests:** `pytest tests/ --tb=short`
+- **JS/TS Lints:** `npm run lint`
+- **JS/TS Tests:** `npm run test`
+
+## Troubleshooting Guide
+
+### Common Configuration Errors
+
+1. **Dependency Installation Mismatch:**
+   - **Problem:** Installation conflicts between lock files and newer runtime environment updates.
+   - **Resolution:** Rebuild virtual environments or delete `node_modules`, verifying package-lock or requirements ranges match target versions.
+   
+2. **Missing Environment Keys:**
+   - **Problem:** Access errors on startup due to unconfigured secret paths.
+   - **Resolution:** Ensure `.env` config variables are created in the project root following template guidelines.
+
+3. **Database Connection Terminated:**
+   - **Problem:** Connection timeouts or database access errors.
+   - **Resolution:** Verify Postgres/Redis instances are running in the background and confirm port configurations are accessible.
+
+## Frequently Asked Questions (FAQ)
+
+- **How is project configuration managed?**
+  Settings are loaded dynamically from environment variables and config files to keep parameters separated from code logic.
+  
+- **Can I run this project in a containerized environment?**
+  Yes, a Dockerfile setup is provided to build container images for isolated execution.
+  
+- **What is the contribution review turnaround SLA?**
+  Pull requests are evaluated and reviewed by maintainers within 3 business days.
+
+## Directory Layout
 
 ```
-sentiment-platform/
-├── docker-compose.yml
-├── .env.example
+Sentiment-Analysis-Platform/
 ├── README.md
-├── ARCHITECTURE.md
-├── backend/
-│   ├── main.py                 # FastAPI app, routes, WebSocket
-│   ├── database.py             # SQLAlchemy async setup
-│   ├── models/models.py        # ORM models
-│   ├── services/
-│   │   ├── sentiment_analyzer.py
-│   │   └── alerting.py
-│   └── tests/
-├── worker/
-│   └── worker.py               # Redis consumer, batch processing
-├── ingester/
-│   └── ingester.py             # Post generation, Redis publisher
-└── frontend/
-    └── src/
-        ├── pages/              # Dashboard, Analytics, LiveFeed
-        ├── components/         # Charts, cards, feed widgets
-        └── services/api.js     # API client, WebSocket handler
+├── LICENSE
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.md
+│   │   └── feature_request.md
+│   └── PULL_REQUEST_TEMPLATE.md
+└── (source files)
 ```
 
-## Troubleshooting
+## Contributing to the Project
 
-```bash
-# Check service logs
-docker-compose logs backend
+I welcome issues and pull requests to make this project better. Please see the detailed guidelines in the [Contributing Guide](CONTRIBUTING.md).
 
-# Restart specific service
-docker-compose restart worker
+## Project License
 
-# Database connectivity
-docker-compose exec postgres pg_isready -U sentiment_user
+This repository is distributed under the MIT License. For complete terms, see the [LICENSE](LICENSE) file.
 
-# Redis connectivity
-docker-compose exec redis redis-cli ping
-```
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| API | FastAPI (async, WebSocket) |
-| Frontend | React + Vite + Recharts |
-| Database | PostgreSQL 15 |
-| Queue | Redis 7 Streams |
-| AI | HuggingFace Transformers |
-| Container | Docker Compose |
-
-## Author
-
-**suryasai**
-
-## License
-
-MIT
+Developed by [S. Manikanta Suryasai](https://github.com/Manirider)

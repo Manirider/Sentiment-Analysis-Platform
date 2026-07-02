@@ -1,0 +1,8 @@
+Repository: Sentiment-Analysis-Platform
+Description: A Dockerized sentiment analysis platform using FastAPI, PostgreSQL, Redis, and a modern frontend.
+Topics: portfolio-project
+
+GitHub Settings Updates:
+1. Go to https://github.com/Manirider/Sentiment-Analysis-Platform/settings
+2. Update the Description field to: A Dockerized sentiment analysis platform using FastAPI, PostgreSQL, Redis, and a modern frontend.
+3. Add the following tags under Topics: portfolio-project
